@@ -1,45 +1,42 @@
-FROM php:8.3-apache
+FROM php:8.1-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    git \
+    curl \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
     zip \
     unzip \
-    git \
-    curl \
-    pkg-config \
     libssl-dev
 
-# Install PHP extensions (MySQL, GD, etc.)
+# Clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-# ✅ Install MongoDB extension
-RUN pecl install mongodb \
-    && echo "extension=mongodb.so" > /usr/local/etc/php/conf.d/mongodb.ini \
-    && docker-php-ext-enable mongodb
+# Install MongoDB extension
+RUN pecl install mongodb && \
+    docker-php-ext-enable mongodb
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# Install OPcache (optional but recommended for production)
+RUN docker-php-ext-enable opcache
+
+# Get latest Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
-WORKDIR /var/www/html
+WORKDIR /var/www
 
-# Copy composer from official image
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-# Copy project files
+# Copy existing application directory contents
 COPY . .
 
-# Install PHP dependencies
+# Install composer dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www
 
-# Expose port 80
-EXPOSE 80
-
-# Start Apache
-CMD ["apache2-foreground"]
+CMD ["php-fpm"]
