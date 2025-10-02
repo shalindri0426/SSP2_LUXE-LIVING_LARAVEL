@@ -3,14 +3,16 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
-// use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CartController;
-use App\Http\Controllers\User\OrderController;
-use App\Http\Controllers\User\PaymentController;
-use App\Http\Controllers\User\UserController;
-use App\Http\Controllers\User\AdminController;
-use App\Http\Controllers\User\WishlistController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\Admin\AdminMainController;
+use App\Http\Controllers\WishlistController;
+use Laravel\Fortify\Features;
+
 
 
 // Route::get('/user', function (Request $request) {
@@ -62,7 +64,7 @@ Route::middleware(['auth:sanctum', 'rolemanager:customer'])->group(function () {
 Route::middleware(['auth:sanctum', 'rolemanager:admin'])->group(function () {
     Route::prefix('admin')->group(function () {
         // Dashboard stats
-        Route::get('/dashboard', [AdminController::class, 'dashboard']);
+        Route::get('/dashboard', [AdminMainController::class, 'dashboard']);
         
         // Category management
         Route::apiResource('categories', CategoryController::class)->except(['index']);

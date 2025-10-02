@@ -12,18 +12,29 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\GoogleAuthController;
 use Laravel\Fortify\Features;
-
-
 
 Route::get('/', function () {
     return view('welcome');
 });
 
+
+// Route::get('/', function () {
+//     return redirect()->route('user.user');
+// });
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// Fortify/Jetstream profile and 2FA routes should only require auth/verified, not rolemanager
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // You can add other Fortify/Jetstream routes here if needed
+});
 
 //admin routes
 Route::middleware(['auth:sanctum', 'verified','rolemanager:admin'])->group(function () {
@@ -68,10 +79,30 @@ Route::middleware(['auth:sanctum', 'verified','rolemanager:admin'])->group(funct
 
 
 //cutomer routes
+
+//public routes
+// Route::prefix('customer')->group(function () {
+//     // Product routes
+//     Route::controller(ProductController::class)->group(function () {
+//         Route::get('/dashboard','index')->name('user.user'); // Home page
+//         Route::get('/products/{product}','show')->name('user.show');
+//     });
+
+//     // Category routes
+//     Route::controller(CategoryController::class)->group(function () {
+//         Route::get('/category/{id}/products','showCategoryProducts')->name('user.category.products');
+//     });
+// });
+
+
+// Google OAuth routes
+Route::get('auth/google', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
+Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
+
 Route::middleware(['auth:sanctum', 'verified','rolemanager:customer'])->group(function () {
     Route::prefix('customer')->group(function () {
         Route::controller(ProductController::class)->group(function () {
-            Route::get('/dashboard','index')->name('user.user');
+            Route::get('/dashboard','index')->name('user.user'); // Home page
             Route::get('/products/{product}','show')->name('user.show');
 
             //cart and order routes
@@ -116,15 +147,4 @@ Route::middleware(['auth:sanctum', 'verified','rolemanager:customer'])->group(fu
     });    
 });
 
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-
-Route::get('/wishlist/test', function() {
-    return response()->json(['status' => 'Routes are working']);
-});
 require __DIR__.'/auth.php';
