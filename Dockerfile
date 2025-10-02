@@ -8,10 +8,16 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     git \
-    curl
+    curl \
+    pkg-config \
+    libssl-dev
 
-# Install PHP extensions
+# Install PHP extensions (MySQL, GD, etc.)
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+
+# Install MongoDB extension
+RUN pecl install mongodb \
+    && docker-php-ext-enable mongodb
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
@@ -22,7 +28,7 @@ WORKDIR /var/www/html
 # Copy composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy project
+# Copy project files
 COPY . .
 
 # Install dependencies
@@ -31,7 +37,8 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progre
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Expose port 80
+# Expose port
 EXPOSE 80
 
+# Start Apache
 CMD ["apache2-foreground"]
