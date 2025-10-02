@@ -16,38 +16,43 @@ class RoleManager
      */
     public function handle(Request $request, Closure $next, $role): Response
     {
-        //checking whether user authenticated or not, if not redirect to login
-        if(!Auth::check()){
+        // Check if user is authenticated
+        if (!Auth::check()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
             return redirect()->route('login');
         }
-        
 
-        //if authenticated, get the role
-        $authUserRole=Auth::user()->role;
+        $authUserRole = Auth::user()->role;
 
-        switch($role){
+        switch ($role) {
             case 'admin':
-                if($authUserRole==0){
+                if ($authUserRole == 0) {
                     return $next($request);
                 }
                 break;
             case 'customer':
-                if($authUserRole==1){
+                if ($authUserRole == 1) {
                     return $next($request);
                 }
                 break;
         }
 
-        //redirect users according to role
-        switch($authUserRole){
+        // If not authorized, return JSON or redirect
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        // Redirect users according to role
+        switch ($authUserRole) {
             case 0:
                 return redirect()->route('admin');
             case 1:
                 return redirect()->route('user.user');
         }
 
-        //if no role defined
+        // If no role defined
         return redirect()->route('login');
-
     }
 }

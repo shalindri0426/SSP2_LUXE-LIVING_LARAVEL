@@ -162,7 +162,7 @@
                                 </div>
                             </button>
                             
-                            <button onclick="buyNow({{ $product->id }})" 
+                            <button onclick="buyNow({{ route('orders.checkout') }})" 
                                     class="btn btn-buy btn-custom flex-fill d-flex align-items-center justify-content-center"
                                     style="min-height: 50px;">
                                 <i class="fas fa-bolt me-2"></i>

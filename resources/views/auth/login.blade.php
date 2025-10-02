@@ -42,7 +42,12 @@
                 <x-button class="ms-4">
                     {{ __('Log in') }}
                 </x-button>
+
             </div>
+            <a href="{{ route('google.redirect') }}" class="btn btn-google">
+                    <svg><!-- Google icon --></svg>
+                    Login with Google
+                </a>
         </form>
     </x-authentication-card>
 </x-guest-layout>
