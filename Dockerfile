@@ -1,79 +1,37 @@
-# -------------------------------
-# Base PHP + Apache image
-# -------------------------------
 FROM php:8.2-apache
 
-# -------------------------------
 # Install system dependencies
-# -------------------------------
 RUN apt-get update && apt-get install -y \
-        libssl-dev \
-        pkg-config \
-        libcurl4-openssl-dev \
-        libpng-dev \
-        libonig-dev \
-        unzip \
-        git \
-        curl \
-        zip \
-        libzip-dev \
-        nodejs \
-        npm \
-    && pecl install mongodb \
-    && docker-php-ext-enable mongodb \
-    && docker-php-ext-install pdo_mysql zip
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    git \
+    curl
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# -------------------------------
 # Set working directory
-# -------------------------------
 WORKDIR /var/www/html
 
-# -------------------------------
-# Copy composer binary from composer image
-# -------------------------------
+# Copy composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# -------------------------------
-# Copy all project files
-# -------------------------------
+# Copy project
 COPY . .
 
-# -------------------------------
-# Install Node.js dependencies
-# -------------------------------
-RUN npm install
+# Install dependencies
+RUN composer install --optimize-autoloader --no-dev
 
-# -------------------------------
-# Build frontend assets for production
-# -------------------------------
-RUN npm run build
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# -------------------------------
-# Install PHP dependencies
-# -------------------------------
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+# Expose port 80
+EXPOSE 80
 
-# -------------------------------
-# Fix permissions for Laravel
-# -------------------------------
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-# -------------------------------
-# Update Apache config to serve /public
-# -------------------------------
-RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf \
-    && sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/apache2.conf
-
-# -------------------------------
-# Expose port 8080 for Render
-# -------------------------------
-EXPOSE 8080
-
-# -------------------------------
-# Run Apache in foreground
-# -------------------------------
 CMD ["apache2-foreground"]
