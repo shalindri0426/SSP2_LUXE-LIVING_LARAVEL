@@ -12,10 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-        // Check if the column exists and is not already tinyInteger
-        if (Schema::hasColumn('users', 'role')) {
-            $table->tinyInteger('role')->default(1)->change();
-        }
+            $table->string('avatar')->nullable()->after('email');
         });
     }
 
@@ -25,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->tinyInteger('role')->nullable()->change();
+            $table->dropColumn('avatar');
         });
     }
 };
