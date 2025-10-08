@@ -20,6 +20,11 @@ class Payment extends Model
         'status'
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     public function order()
     {
         return $this->belongsTo(Order::class);

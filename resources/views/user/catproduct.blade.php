@@ -106,12 +106,12 @@
                                                 <i class="fas fa-spinner fa-spin"></i>
                                             </div>
                                         </button>
-                                        
+{{--                                         
                                         <button onclick="buyNow({{ $product->id }})" 
                                                 class="flex-1 bg-green-600 text-white py-2 px-3 rounded-lg font-medium hover:bg-green-700 transition-colors text-sm">
                                             <i class="fas fa-bolt mr-1"></i>
                                             Buy Now
-                                        </button>
+                                        </button> --}}
                                     </div>
                                 @else
                                     <button disabled 

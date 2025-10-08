@@ -9,71 +9,144 @@ use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    public function index(Request $request)
-    {
-        $cartItems = Cart::where('user_id', $request->user()->id)
-            ->with(['product.category'])
-            ->get();
+    // public function index(Request $request)
+    // {
+    //     $cartItems = Cart::where('user_id', $request->user()->id)
+    //         ->with(['product.category'])
+    //         ->get();
 
-        $total = $cartItems->sum(function ($item) {
-            return $item->quantity * $item->product->price;
+    //     $total = $cartItems->sum(function ($item) {
+    //         return $item->quantity * $item->product->price;
+    //     });
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => [
+    //             'items' => $cartItems,
+    //             'total' => $total,
+    //             'count' => $cartItems->count()
+    //         ]
+    //     ]);
+    // }
+    public function index(Request $request)
+{
+    $cartItems = Cart::where('user_id', $request->user()->id)
+        ->with(['product.category'])
+        ->get()
+        ->map(function($item) {
+            return [
+                'id' => $item->id,
+                'product_id' => $item->product_id,
+                'product_name' => $item->product->name,
+                'price' => $item->price ?? $item->product->price,
+                'quantity' => $item->quantity,
+                'image' => $item->product->image_url,
+            ];
         });
 
+    $total = $cartItems->sum(function ($item) {
+        return $item['quantity'] * $item['price'];
+    });
+
+    return response()->json([
+        'success' => true,
+        'data' => $cartItems,
+        'total' => $total,
+        'count' => $cartItems->count()
+    ]);
+}
+
+    // public function add(Request $request)
+    // {
+    //     $request->validate([
+    //         'product_id' => 'required|exists:products,id',
+    //         'quantity' => 'required|integer|min:1',
+    //     ]);
+
+    //     $product = Product::find($request->product_id);
+        
+    //     if ($product->stock_quantity < $request->quantity) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Insufficient stock'
+    //         ], 400);
+    //     }
+
+    //     $cartItem = Cart::where('user_id', $request->user()->id)
+    //         ->where('product_id', $request->product_id)
+    //         ->first();
+
+    //     if ($cartItem) {
+    //         $newQuantity = $cartItem->quantity + $request->quantity;
+            
+    //         if ($product->stock_quantity < $newQuantity) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Insufficient stock'
+    //             ], 400);
+    //         }
+            
+    //         $cartItem->update(['quantity' => $newQuantity]);
+    //     } else {
+    //         $cartItem = Cart::create([
+    //             'user_id' => $request->user()->id,
+    //             'product_id' => $request->product_id,
+    //             'quantity' => $request->quantity,
+    //         ]);
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Item added to cart',
+    //         'data' => $cartItem->load('product')
+    //     ]);
+    // }
+    public function add(Request $request)
+{
+    $request->validate([
+        'product_id' => 'required|exists:products,id',
+        'quantity' => 'required|integer|min:1',
+    ]);
+
+    $product = Product::find($request->product_id);
+    
+    if ($product->stock_quantity < $request->quantity) {
         return response()->json([
-            'success' => true,
-            'data' => [
-                'items' => $cartItems,
-                'total' => $total,
-                'count' => $cartItems->count()
-            ]
-        ]);
+            'success' => false,
+            'message' => 'Insufficient stock'
+        ], 400);
     }
 
-    public function add(Request $request)
-    {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-        ]);
+    $cartItem = Cart::where('user_id', $request->user()->id)
+        ->where('product_id', $request->product_id)
+        ->first();
 
-        $product = Product::find($request->product_id);
+    if ($cartItem) {
+        $newQuantity = $cartItem->quantity + $request->quantity;
         
-        if ($product->stock_quantity < $request->quantity) {
+        if ($product->stock_quantity < $newQuantity) {
             return response()->json([
                 'success' => false,
                 'message' => 'Insufficient stock'
             ], 400);
         }
-
-        $cartItem = Cart::where('user_id', $request->user()->id)
-            ->where('product_id', $request->product_id)
-            ->first();
-
-        if ($cartItem) {
-            $newQuantity = $cartItem->quantity + $request->quantity;
-            
-            if ($product->stock_quantity < $newQuantity) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Insufficient stock'
-                ], 400);
-            }
-            
-            $cartItem->update(['quantity' => $newQuantity]);
-        } else {
-            $cartItem = Cart::create([
-                'user_id' => $request->user()->id,
-                'product_id' => $request->product_id,
-                'quantity' => $request->quantity,
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Item added to cart',
-            'data' => $cartItem->load('product')
+        
+        $cartItem->update(['quantity' => $newQuantity]);
+    } else {
+        $cartItem = Cart::create([
+            'user_id' => $request->user()->id,
+            'product_id' => $request->product_id,
+            'quantity' => $request->quantity,
+            'price' => $product->price, // ADD THIS LINE
         ]);
     }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Item added to cart',
+        'data' => $cartItem->load('product')
+    ]);
+}
 
     public function update(Request $request, $id)
     {

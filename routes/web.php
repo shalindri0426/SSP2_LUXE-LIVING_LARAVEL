@@ -47,9 +47,6 @@ Route::middleware(['auth:sanctum', 'verified','rolemanager:admin'])->group(funct
             Route::get('/product/create','pcindex')->name('product.create');
             Route::get('/product/manage','pmanage')->name('product.manage');
             Route::get('/user/manage','umanage')->name('user.manage');
-
-
-
         }); 
 
         Route::controller(CategoryController::class)->group(function () {

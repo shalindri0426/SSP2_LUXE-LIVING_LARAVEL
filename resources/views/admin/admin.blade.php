@@ -55,7 +55,7 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm text-gray-600">Total Customers</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $totalCustomers ?? 0 }}</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $totalUsers ?? 0 }}</p>
                         </div>
                     </div>
                 </div>
@@ -68,8 +68,8 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm text-gray-600">Revenue</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $totalRevenue ?? 'LKR 0' }}</p>
+                            <p class="text-sm text-gray-600">Total Categories</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $totalCategories ?? '0' }}</p>
                         </div>
                     </div>
                 </div>

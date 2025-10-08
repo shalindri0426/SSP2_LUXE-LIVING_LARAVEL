@@ -11,6 +11,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Admin\AdminMainController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\ProfileController;
 use Laravel\Fortify\Features;
 
 
@@ -23,7 +24,7 @@ use Laravel\Fortify\Features;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Get categories and products (public access for browsing)
+// Get categories and products
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}/products', [CategoryController::class, 'products']);
 Route::get('/products', [ProductController::class, 'index']);
@@ -33,7 +34,7 @@ Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::middleware(['auth:sanctum', 'rolemanager:customer'])->group(function () {
     // User profile
     Route::get('/user/profile', [AuthController::class, 'profile']);
-    Route::put('/user/profile', [AuthController::class, 'updateProfile']);
+    Route::match(['post','put'],'/profile/update', [ProfileController::class, 'apiUpdate']);
     
     // Cart management
     Route::prefix('cart')->group(function () {
@@ -45,20 +46,30 @@ Route::middleware(['auth:sanctum', 'rolemanager:customer'])->group(function () {
         Route::get('/count', [CartController::class, 'count']);
     });
 
+    // Wishlist management
+    Route::prefix('wishlist')->group(function () {
+        Route::get('/', [WishlistController::class, 'apiIndex']);
+        Route::get('/count', [WishlistController::class, 'count']);
+        Route::get('/check/{product_id}', [WishlistController::class, 'check']);
+        Route::post('/add', [WishlistController::class, 'add']);
+        Route::delete('/remove/{product_id}', [WishlistController::class, 'remove']);
+    });
+
     // Order management
     Route::prefix('orders')->group(function () {
         Route::get('/', [OrderController::class, 'index']);
-        Route::post('/', [OrderController::class, 'store']);
+        Route::post('/', [OrderController::class, 'apiStore']);
         Route::get('/{id}', [OrderController::class, 'show']);
         Route::get('/{id}/payment', [OrderController::class, 'payment']);
     });
 
     // Payment
-    Route::post('/orders/{order}/payment', [PaymentController::class, 'store']);
+    Route::post('/payment/{order}', [PaymentController::class, 'apiStore']);
     
     // Logout
     Route::post('/logout', [AuthController::class, 'logout']);
 });
+
 
 // Protected routes - Admin
 Route::middleware(['auth:sanctum', 'rolemanager:admin'])->group(function () {
@@ -83,14 +94,4 @@ Route::middleware(['auth:sanctum', 'rolemanager:admin'])->group(function () {
     });
 });
 
-// Get wishlist count
-Route::middleware('auth:sanctum')->get('/wishlist/count', [WishlistController::class, 'count']);
 
-// Check if item is in wishlist
-Route::middleware('auth:sanctum')->get('/wishlist/check/{productId}', [WishlistController::class, 'check']);
-
-// Add to wishlist
-Route::middleware('auth:sanctum')->post('/wishlist/add', [WishlistController::class, 'add']);
-
-// Remove from wishlist
-Route::middleware('auth:sanctum')->delete('/wishlist/remove/{productId}', [WishlistController::class, 'remove']);

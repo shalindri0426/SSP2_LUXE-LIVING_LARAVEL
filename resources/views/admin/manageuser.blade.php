@@ -105,8 +105,12 @@
                                          <form action="{{route('delete.user',$user->id )}}" method="POST">
                                             @csrf
                                             @method('DELETE')
-                                           <input type="submit" value="Delete" class="inline-flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-semibold rounded-lg hover:from-red-600 hover:to-pink-700 transform hover:scale-105 transition-all duration-200 shadow-sm hover:shadow-md">
+                                           <input 
+                                           type="submit" 
+                                           value="Delete" 
+                                           class="inline-flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-semibold rounded-lg hover:from-red-600 hover:to-pink-700 transform hover:scale-105 transition-all duration-200 shadow-sm hover:shadow-md">
                                            {{-- onclick="return confirm('Are you sure you want to delete this user?')" --}}
+                                        </form>
                                     </div>
                                 </td>
                             </tr>

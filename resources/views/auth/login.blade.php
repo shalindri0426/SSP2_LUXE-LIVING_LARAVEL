@@ -46,7 +46,7 @@
             </div>
             <a href="{{ route('google.redirect') }}" class="btn btn-google">
                     <svg><!-- Google icon --></svg>
-                    Login with Google
+                    Sign in with Google
                 </a>
         </form>
     </x-authentication-card>

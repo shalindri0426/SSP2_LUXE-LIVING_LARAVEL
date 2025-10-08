@@ -33,6 +33,7 @@ class User extends Authenticatable
         'google_id',
         'avatar',
         'role',
+        'profile_photo_path',
         'email_verified_at',
     ];
 

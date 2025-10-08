@@ -7,12 +7,16 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
-//use App\Models\Order;
+use App\Models\Order;
 
 class AdminMainController extends Controller
 {
     public function index(){
-        return view('admin.admin');
+        $totalUsers = User::where('role',1)->count();
+        $totalProducts = Product::count();
+        $totalCategories = Category::count();
+        $totalOrders = Order::count();
+        return view('admin.admin',compact('totalUsers','totalProducts','totalCategories','totalOrders'));
     }
 
     // public function order(){
