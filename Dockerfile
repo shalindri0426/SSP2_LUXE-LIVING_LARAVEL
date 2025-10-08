@@ -57,7 +57,7 @@ WORKDIR /var/www/html
 
 # Copy vendor and built assets
 COPY --from=composer --chown=www-data:www-data /build/vendor ./vendor
-COPY --from=frontend /build/public/build ./public/build
+COPY --from=frontend /build/public ./public
 
 # Copy application code
 COPY --chown=www-data:www-data . .
