@@ -19,11 +19,6 @@ RUN npm run build
 # -------------------------------
 FROM composer:2 AS composer
 
-RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS openssl-dev \
-    && pecl install mongodb \
-    && docker-php-ext-enable mongodb \
-    && apk del .build-deps
-
 WORKDIR /build
 
 COPY composer.json composer.lock ./
@@ -43,7 +38,7 @@ RUN composer dump-autoload --optimize --classmap-authoritative
 # -------------------------------
 FROM php:8.2-apache
 
-# Install PHP extensions (this will pull in necessary runtime libraries)
+# Install PHP extensions (runtime libraries only)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl-dev \
     pkg-config \
@@ -51,8 +46,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev \
     libonig-dev \
     libzip-dev \
-    && pecl install mongodb \
-    && docker-php-ext-enable mongodb \
     && docker-php-ext-install pdo_mysql zip \
     && apt-get purge -y --auto-remove libssl-dev pkg-config libcurl4-openssl-dev libpng-dev libonig-dev libzip-dev \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
