@@ -36,7 +36,7 @@ RUN composer dump-autoload --optimize --classmap-authoritative
 # -------------------------------
 # Stage 3: Final Runtime Image
 # -------------------------------
-FROM php:8.2-apache
+FROM php:8.3-apache
 
 # Install PHP extensions (runtime libraries only)
 RUN apt-get update && apt-get install -y --no-install-recommends \
