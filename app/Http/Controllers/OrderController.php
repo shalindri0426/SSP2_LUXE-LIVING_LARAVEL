@@ -9,6 +9,7 @@ use App\Models\Cart;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
@@ -117,6 +118,64 @@ class OrderController extends Controller
             return back()->withInput()->with('error', 'Order confirmation failed: ' . $e->getMessage());
         }
     }
+
+    public function apiStore(Request $request)
+    {
+        try {
+            // Validate the request
+            $validated = $request->validate([
+                'name' => 'required|string',
+                'email' => 'required|email',
+                'delivery_name' => 'required|string',
+                'delivery_phone' => 'required|string',
+                'delivery_address' => 'required|string',
+                'special_instructions' => 'nullable|string',
+                'products' => 'required|array',
+                'total_amount' => 'required|numeric',
+            ]);
+
+            // Generate unique order ID
+            $orderId = 'ORD-' . strtoupper(Str::random(12));
+
+            // Create order using Eloquent model (not DB::table)
+            $order = Order::create([
+                'order_id' => $orderId,
+                'user_id' => $request->user_id ?? 2,
+                'products' => json_encode($validated['products']),
+                'total_amount' => $validated['total_amount'],
+                'delivery_address' => $validated['delivery_address'],
+                'delivery_phone' => $validated['delivery_phone'],
+                'delivery_name' => $validated['delivery_name'],
+                'special_instructions' => $validated['special_instructions'] ?? null,
+                'order_status' => 'confirmed',
+                'payment_status' => 'pending',
+            ]);
+
+            // Return response with both IDs
+            return response()->json([
+                'success' => true,
+                'message' => 'Order created successfully',
+                'order_id' => $order->order_id,  // String ID (ORD-XXX)
+                'id' => $order->id,              // Numeric ID
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+            
+        } catch (\Exception $e) {
+            Log::error('Order creation error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create order',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
     public function payment(Order $order)
     {
